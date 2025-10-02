@@ -1,7 +1,11 @@
 import React from "react";
-import {Link } from "react-router-dom"
+import {Link, useLocation } from "react-router-dom"
 
 const Bar = () => {
+  const location = useLocation();
+  const isActiveLeads= location.pathname === "/leads"
+  const isActiveAgents= location.pathname === "/sales-agents";
+  const isActiveReports=location.pathname=== '/reports';
   return (
     <div
       className="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100"
@@ -15,9 +19,25 @@ const Bar = () => {
           </Link>
         </li>
         <li>
-          <a href="#" className="nav-link active text-white">
+          {isActiveLeads ?
+         ( <Link to="/leads" className="nav-link active text-white">
             Lead Details
-          </a>
+          </Link>):("")
+          }
+        </li>
+         <li>
+          {isActiveAgents ?
+         ( <Link to="/sales-agents" className="nav-link active text-white">
+            Sales Agent
+          </Link>):("")
+          }
+        </li>
+          <li>
+          {isActiveReports ?
+         ( <Link to="/reports" className="nav-link active text-white">
+            Reports
+          </Link>):("")
+          }
         </li>
       </ul>
     </div>

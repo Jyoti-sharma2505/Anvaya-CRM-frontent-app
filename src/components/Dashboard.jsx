@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
@@ -9,6 +9,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [agents, setAgents] = useState([]);
+  const [filterStatus, setFilterStatus] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     source: "",
@@ -26,6 +27,19 @@ const Dashboard = () => {
       [name]: value,
     });
   };
+  // const displayLeadsByStatus = filterStatus ? leads.filter((lead) => lead.status === filterStatus) : leads;
+
+  // const handleFilterStatus = (status)=>{
+  //   if(filterStatus === status){
+  //     setFilterStatus("")
+  //   }else {
+  //     setFilterStatus(status)
+  //   }
+  // }
+  const navigate = useNavigate()
+  const goToStatusPage = (status) => {
+    navigate(`/leads/status/${status}`);
+  };
 
   const fetchDataAgents = async () => {
     try {
@@ -37,7 +51,7 @@ const Dashboard = () => {
       console.log(error);
     }
   };
-  console.log(agents,"agents")
+  // console.log(agents, "agents")
 
   const handleCreateLead = async () => {
     try {
@@ -91,7 +105,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="container mt-4">
+    <div className="container mt-4 py-3">
       <h2 className="text-center mb-4 text-primary">Anvaya CRM Dashboard</h2>
 
       {/* Leads Section */}
@@ -132,19 +146,23 @@ const Dashboard = () => {
         </div>
         <div className="card-body">
           <ul className="list-group">
-            <li className="list-group-item d-flex justify-content-between">
+            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("New")}
+              style={{ cursor: "pointer" }}>
               New{" "}
-              <span className="badge bg-primary">
+              <span className="badge bg-primary" >
                 {leads?.filter((l) => l.status === "New").length}
               </span>
             </li>
-            <li className="list-group-item d-flex justify-content-between">
+            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("Contacted")}
+              style={{ cursor: "pointer" }}>
               Contacted{" "}
               <span className="badge bg-warning text-dark">
                 {leads?.filter((l) => l.status === "Contacted").length}
+                <Link to="/lead-status"></Link>
               </span>
             </li>
-            <li className="list-group-item d-flex justify-content-between">
+            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("Qualified")}
+              style={{ cursor: "pointer" }}>
               Qualified{" "}
               <span className="badge bg-success">
                 {leads?.filter((l) => l.status === "Qualified").length}
@@ -155,13 +173,48 @@ const Dashboard = () => {
       </div>
       <div className="mb-3">
         <h5>Quick Filters</h5>
-        <button className="btn btn-outline-primary me-2">New</button>
-        <button className="btn btn-outline-warning">Contacted</button>
+        <button
+          className={`btn me-2 ${filterStatus === "New" ? "btn-primary" : "btn-outline-primary"
+            }`}
+          onClick={() => goToStatusPage("New")}
+        >
+          New
+        </button>
+        <button
+          className={`btn me-2 ${filterStatus === "Contacted" ? "btn-warning" : "btn-outline-warning"
+            }`}
+          onClick={() => goToStatusPage("Contacted")}
+        >
+          Contacted 
+        </button>
+        <button
+          className={`btn me-2 ${filterStatus === "Qualified" ? "btn-warning" : "btn-outline-warning"
+            }`}
+          onClick={() => goToStatusPage("Qualified")}
+        >
+          Qualified
+        </button>
+           <button
+          className={`btn ${filterStatus === "Contacted" ? "btn-warning" : "btn-outline-warning"
+            }`}
+          onClick={() => goToStatusPage("Closed")}
+        >
+          Closed
+        </button>
+        {/* Optional: Add more status buttons here */}
+        {filterStatus && (
+          <button
+            className="btn btn-secondary ms-3"
+            onClick={() => setFilterStatus("")}
+          >
+            Clear Filter
+          </button>
+        )}
       </div>
 
       {/* Add New Lead */}
       <button
-        className="btn btn-success w-100"
+        className="btn btn-success w-100  ms-3"
         onClick={() => setShowModal(true)}
       >
         + Add New Lead
@@ -205,9 +258,9 @@ const Dashboard = () => {
                 onChange={handleChange}
                 placeholder="Agent name"
               >
-              {agents.map((agent)=>{
-                return <option key={agent._id} value={agent._id}>{agent.name}</option>
-              })}
+                {agents.map((agent) => {
+                  return <option key={agent._id} value={agent._id}>{agent.name}</option>
+                })}
               </Form.Select>
             </Form.Group>
 

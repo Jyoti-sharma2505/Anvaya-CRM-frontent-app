@@ -1,7 +1,11 @@
-
-import {Link} from "react-router-dom"
+import { NavLink } from "react-router-dom";
+import { FaUsers, FaFileAlt, FaChartBar, FaCog, FaHandshake } from "react-icons/fa";
 
 const Sidebar = () => {
+  const linkClass = ({ isActive }) =>
+    "nav-link d-flex align-items-center px-3 py-2 mb-1 rounded " +
+    (isActive ? "bg-primary text-white" : "text-white");
+
   return (
     <div
       className="d-flex flex-column flex-shrink-0 p-3 bg-dark text-white vh-100"
@@ -10,21 +14,34 @@ const Sidebar = () => {
       <h3 className="text-center mb-4">Anvaya CRM</h3>
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item">
-          <Link to="/leads" className="nav-link active text-white">
-          Leads
-          </Link>
+          <NavLink to="/leads" className={linkClass}>
+            <FaFileAlt className="me-2" />
+            Leads
+          </NavLink>
         </li>
-        <li>
-          <a href="#" className="nav-link text-white">Sales</a>
+        <li className="nav-item">
+          <NavLink to="/sales-agents" className={linkClass}>
+            <FaUsers className="me-2" />
+            Sales Agents
+          </NavLink>
         </li>
-        <li>
-          <a href="#" className="nav-link text-white">Agents</a>
+        <li className="nav-item">
+          <NavLink to="/agents" className={linkClass}>
+            <FaHandshake className="me-2" />
+            Agents
+          </NavLink>
         </li>
-        <li>
-          <a href="#" className="nav-link text-white">Reports</a>
+        <li className="nav-item">
+          <NavLink to="/reports" className={linkClass}>
+            <FaChartBar className="me-2" />
+            Reports
+          </NavLink>
         </li>
-        <li>
-          <a href="#" className="nav-link text-white">Settings</a>
+        <li className="nav-item">
+          <NavLink to="/settings" className={linkClass}>
+            <FaCog className="me-2" />
+            Settings
+          </NavLink>
         </li>
       </ul>
     </div>
