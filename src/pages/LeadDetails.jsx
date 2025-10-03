@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
 
 const LeadDetails = () => {
   const { leadId } = useParams();
@@ -49,11 +50,12 @@ const LeadDetails = () => {
   };
 
   const addComment = async () => {
-    if (!newComment) return alert("Comment cannot be empty");
+    
+    if (!newComment) return toast.error("Comment cannot be empty");
 
     try {
       const authorId = leadsDetails.salesAgent._id;
-      if (!authorId) return alert("Sales agent not found for this lead");
+      if (!authorId) return toast.error("Sales agent not found for this lead");
 
       const payload = { commentText: newComment, author: authorId };
       const res = await axios.post(
@@ -68,6 +70,7 @@ const LeadDetails = () => {
     } catch (err) {
       console.log(err);
     }
+    toast("Comment added successfully..")
   };
 
   useEffect(() => {
@@ -93,6 +96,7 @@ const LeadDetails = () => {
   };
 
   const handleSaveChanges = async () => {
+    toast("Edit successfully....")
     try {
       const payload = {
         ...editLead,
@@ -112,10 +116,10 @@ const LeadDetails = () => {
   };
 
   const handleDeleteLead = async () => {
-    if (!window.confirm("Are you sure you want to delete this lead?")) return;
+    if (!toast.error("Are you sure you want to delete this lead?")) return;
     try {
       await axios.delete(`https://anvaya-crm-backend-app.vercel.app/leads/${leadId}`);
-      alert("Lead deleted successfully");
+      toast("Lead deleted successfully");
       setShowModal(false);
       navigate("/"); // redirect to dashboard
     } catch (err) {
@@ -128,6 +132,7 @@ const LeadDetails = () => {
   return (
     <div className="d-flex">
       <div className="flex-grow-1 p-4">
+        <ToastContainer/>
         <h2 className="mb-4">
           Lead Management: <span className="text-primary">[{leadsDetails?.name}]</span>
         </h2>

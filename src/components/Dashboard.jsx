@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import { ToastContainer, toast } from "react-toastify";
 
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
@@ -84,6 +85,7 @@ const Dashboard = () => {
     } catch (errr) {
       console.log(errr);
     }
+    toast("Added successfully lead data..")
   };
 
   const fetchData = async () => {
@@ -106,6 +108,7 @@ const Dashboard = () => {
 
   return (
     <div className="container mt-4 py-3">
+       <ToastContainer/>
       <h2 className="text-center mb-4 text-primary">Anvaya CRM Dashboard</h2>
 
       {/* Leads Section */}
@@ -150,14 +153,14 @@ const Dashboard = () => {
               style={{ cursor: "pointer" }}>
               New{" "}
               <span className="badge bg-primary" >
-                {leads?.filter((l) => l.status === "New").length}
+                {leads?.filter((l) => l?.status === "New").length}
               </span>
             </li>
             <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("Contacted")}
               style={{ cursor: "pointer" }}>
               Contacted{" "}
               <span className="badge bg-warning text-dark">
-                {leads?.filter((l) => l.status === "Contacted").length}
+                {leads?.filter((l) => l?.status === "Contacted").length}
                 <Link to="/lead-status"></Link>
               </span>
             </li>
@@ -165,7 +168,7 @@ const Dashboard = () => {
               style={{ cursor: "pointer" }}>
               Qualified{" "}
               <span className="badge bg-success">
-                {leads?.filter((l) => l.status === "Qualified").length}
+                {leads?.filter((l) => l?.status === "Qualified").length}
               </span>
             </li>
           </ul>

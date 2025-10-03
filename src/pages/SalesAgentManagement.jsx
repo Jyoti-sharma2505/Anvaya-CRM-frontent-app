@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Modal, Button, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 const SalesAgentManagement = () => {
   const [agents, setAgents] = useState([]);
@@ -49,12 +50,14 @@ const SalesAgentManagement = () => {
     } catch (err) {
       console.error(err);
     }
+    toast("Name and email add successfully..")
   };
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column">
       {/* Header */}
       <header className="bg-primary text-white py-3 px-4">
+        <ToastContainer/>s
         <h1 className="h4 m-0">Sales Agent Management</h1>
       </header>
 
