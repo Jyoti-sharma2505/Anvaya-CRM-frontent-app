@@ -17,12 +17,10 @@ const Reports = () => {
   const fetchPipeline = async () => {
     try {
       const res = await axios.get("https://anvaya-crm-backend-app.vercel.app/report/pipeline");
-
       const data = [
         { name: "Closed", value: res.data.pipeline.closed ?? 0 },
         { name: "Pipeline", value: res.data.pipeline.pipeline ?? 0 }
       ];
-
       setPipelineData(data);
     } catch (err) {
       console.error("Error fetching pipeline:", err);
@@ -33,7 +31,6 @@ const Reports = () => {
   const fetchLastWeek = async () => {
     try {
       const res = await axios.get("https://anvaya-crm-backend-app.vercel.app/report/last-week");
-
       const report = res.data.report || [];
 
       // 🔹 Aggregate by Sales Agent
@@ -47,11 +44,10 @@ const Reports = () => {
         closed: agentMap[agent]
       }));
 
-      // 🔹 Aggregate by Status (optional, if status exists)
-      // Example: assuming each lead has status property
+      // 🔹 Aggregate by Status
       const statusMap = {};
       report.forEach((lead) => {
-        const status = lead.status || "Closed"; // default Closed if status missing
+        const status = lead.status || "Closed";
         statusMap[status] = (statusMap[status] || 0) + 1;
       });
       const statuses = Object.keys(statusMap).map(status => ({
@@ -72,100 +68,114 @@ const Reports = () => {
   }, []);
 
   return (
-    <div className="container mt-4">
+    <div className="container-fluid py-4">
       <h2 className="text-center mb-4 text-primary">📊 Anvaya CRM Reports</h2>
 
-      {/* Pipeline Chart */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-header bg-info text-white">
-          Total Leads Closed vs Pipeline
+      <div className="row g-4">
+        {/* Pipeline Chart */}
+        <div className="col-12 col-md-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-header bg-info text-white">
+              Total Leads Closed vs Pipeline
+            </div>
+            <div className="card-body">
+              {pipelineData.length > 0 ? (
+                <div style={{ width: "100%", height: "300px" }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={pipelineData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={60}
+                        outerRadius="80%"
+                        label
+                      >
+                        {pipelineData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                      <text
+                        x="50%"
+                        y="50%"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize={16}
+                        fontWeight="bold"
+                      >
+                        {pipelineData.reduce((acc, cur) => acc + cur.value, 0)} Leads
+                      </text>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-center">Loading Pipeline Data...</p>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="card-body">
-          {pipelineData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pipelineData}
-                  dataKey="value"
-                  nameKey="name"
-                  innerRadius={70}
-                  outerRadius={120}
-                  label
-                >
-                  {pipelineData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={18}
-                  fontWeight="bold"
-                >
-                  {pipelineData.reduce((acc, cur) => acc + cur.value, 0)} Leads
-                </text>
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-center">Loading Pipeline Data...</p>
-          )}
-        </div>
-      </div>
 
-      {/* Leads Closed by Agent */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-header bg-success text-white">
-          Leads Closed by Sales Agent
+        {/* Leads Closed by Agent */}
+        <div className="col-12 col-md-6">
+          <div className="card shadow-sm h-100">
+            <div className="card-header bg-success text-white">
+              Leads Closed by Sales Agent
+            </div>
+            <div className="card-body">
+              {agentData.length > 0 ? (
+                <div style={{ width: "100%", height: "300px" }}>
+                  <ResponsiveContainer>
+                    <BarChart data={agentData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="agent" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="closed" fill="#8884d8" barSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-center">Loading Agent Data...</p>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="card-body">
-          {agentData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={agentData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="agent" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="closed" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-center">Loading Agent Data...</p>
-          )}
-        </div>
-      </div>
 
-      {/* Lead Status Distribution */}
-      <div className="card shadow-sm mb-4">
-        <div className="card-header bg-warning text-dark">
-          Lead Status Distribution
-        </div>
-        <div className="card-body">
-          {statusData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  dataKey="count"
-                  nameKey="status"
-                  outerRadius={120}
-                  label
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-center">Loading Status Data...</p>
-          )}
+        {/* Lead Status Distribution */}
+        <div className="col-12">
+          <div className="card shadow-sm">
+            <div className="card-header bg-warning text-dark">
+              Lead Status Distribution
+            </div>
+            <div className="card-body">
+              {statusData.length > 0 ? (
+                <div style={{ width: "100%", height: "300px" }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        dataKey="count"
+                        nameKey="status"
+                        outerRadius="80%"
+                        label
+                      >
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <p className="text-center">Loading Status Data...</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

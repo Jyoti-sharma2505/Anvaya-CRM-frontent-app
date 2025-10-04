@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-import { Form } from "react-bootstrap";
+import { Form, Row, Col, Card, Spinner } from "react-bootstrap";
 
 const LeadsByAgent = () => {
   const { name: agentName } = useParams();
@@ -50,15 +50,17 @@ const LeadsByAgent = () => {
 
   return (
     <div className="p-4">
-      <h2> Lead List by Agent  </h2>
-      <hr/>
-      <h2>Sales Agent: {agentName}</h2>
+      <h2 className="mb-3">Lead List by Agent</h2>
+      <h5 className="text-muted mb-4">Sales Agent: {agentName}</h5>
 
       {/* Filters */}
-      <Form className="d-flex gap-3 my-4 align-items-center flex-wrap">
-        <Form.Group controlId="priorityFilter" className="flex-grow-1" style={{ minWidth: "180px" }}>
+      <Form className="d-flex gap-3 my-3 align-items-center flex-wrap">
+        <Form.Group controlId="priorityFilter" style={{ minWidth: "180px" }}>
           <Form.Label>Filter by Priority</Form.Label>
-          <Form.Select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
+          <Form.Select
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+          >
             <option value="">All Priorities</option>
             <option value="High">High</option>
             <option value="Medium">Medium</option>
@@ -78,18 +80,40 @@ const LeadsByAgent = () => {
 
       {/* Leads */}
       {loading ? (
-        <div>Loading leads...</div>
+        <div className="d-flex justify-content-center my-5">
+          <Spinner animation="border" role="status" />
+        </div>
       ) : filteredLeads.length === 0 ? (
-        <div>No leads found for this agent.</div>
+        <div className="text-center text-muted mt-4">No leads found for this agent.</div>
       ) : (
-        filteredLeads.map((lead) => (
-          <div key={lead._id} className="border p-2 mb-2 rounded">
-            <strong>Name:</strong> {lead.name || "Unnamed Lead"} <br />
-            <strong>Status:</strong> {lead.status} <br />
-            <strong>Priority:</strong> {lead.priority} <br />
-            <strong>Time to Close:</strong> {lead.timeToClose} days
-          </div>
-        ))
+        <Row xs={1} md={2} lg={3} className="g-4 mt-3">
+          {filteredLeads.map((lead) => (
+            <Col key={lead._id}>
+              <Card className="h-100 shadow-sm">
+                <Card.Body>
+                  <Card.Title>{lead.name || "Unnamed Lead"}</Card.Title>
+                  <Card.Text>
+                    <strong>Status:</strong> {lead.status} <br />
+                    <strong>Priority:</strong>{" "}
+                    <span
+                      className={`badge ${
+                        lead.priority === "High"
+                          ? "bg-danger"
+                          : lead.priority === "Medium"
+                          ? "bg-warning text-dark"
+                          : "bg-success"
+                      }`}
+                    >
+                      {lead.priority}
+                    </span>
+                    <br />
+                    <strong>Time to Close:</strong> {lead.timeToClose} days
+                  </Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       )}
     </div>
   );

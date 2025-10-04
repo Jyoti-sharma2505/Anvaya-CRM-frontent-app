@@ -1,16 +1,18 @@
+// Dashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Modal, Button, Form } from "react-bootstrap";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Dashboard = () => {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [agents, setAgents] = useState([]);
-  const [filterStatus, setFilterStatus] = useState("")
+  const [filterStatus, setFilterStatus] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     source: "",
@@ -21,27 +23,18 @@ const Dashboard = () => {
     tags: "",
   });
 
+  const navigate = useNavigate();
+
+  // handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
-  };
-  // const displayLeadsByStatus = filterStatus ? leads.filter((lead) => lead.status === filterStatus) : leads;
-
-  // const handleFilterStatus = (status)=>{
-  //   if(filterStatus === status){
-  //     setFilterStatus("")
-  //   }else {
-  //     setFilterStatus(status)
-  //   }
-  // }
-  const navigate = useNavigate()
-  const goToStatusPage = (status) => {
-    navigate(`/leads/status/${status}`);
+    }));
   };
 
+  // fetch agents
   const fetchDataAgents = async () => {
     try {
       const res = await axios.get(
@@ -52,27 +45,43 @@ const Dashboard = () => {
       console.log(error);
     }
   };
-  // console.log(agents, "agents")
 
+  // fetch leads
+  const fetchData = async () => {
+    try {
+      const res = await axios.get(
+        "https://anvaya-crm-backend-app.vercel.app/leads"
+      );
+      setLeads(res.data.leads);
+    } catch (err) {
+      console.error("Error fetching leads:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // create lead
   const handleCreateLead = async () => {
     try {
       const payload = {
         ...formData,
-        timeToClose: Number(formData.timeToClose), // ensure number
+        timeToClose: Number(formData.timeToClose) || 0,
         tags: formData.tags
           ? formData.tags.split(",").map((tag) => tag.trim())
           : [],
       };
-      console.log(payload, "abc");
+
       const res = await axios.post(
         "https://anvaya-crm-backend-app.vercel.app/leads",
-        {
-          ...formData,
-          tags: formData.tags.split(",").map((tag) => tag.trim()),
-        }
+        payload
       );
-      setLeads(...leads, res.data.lead);
-      setShowModal(false);
+
+      // ✅ Correct way to update state
+      setLeads((prev) => [...prev, res.data.lead]);
+
+      toast.success("Lead added successfully!");
+
+      // reset form
       setFormData({
         name: "",
         source: "",
@@ -82,23 +91,15 @@ const Dashboard = () => {
         timeToClose: "",
         tags: "",
       });
-    } catch (errr) {
-      console.log(errr);
+      setShowModal(false);
+    } catch (err) {
+      console.error("Error creating lead:", err);
+      toast.error("Failed to add lead");
     }
-    toast("Added successfully lead data..")
   };
 
-  const fetchData = async () => {
-    try {
-      const res = await axios.get(
-        "https://anvaya-crm-backend-app.vercel.app/leads"
-      );
-      setLeads(res.data.leads); // jitni bhi leads hain wo state me save kar lo
-    } catch (err) {
-      console.error("Error fetching leads:", err);
-    } finally {
-      setLoading(false);
-    }
+  const goToStatusPage = (status) => {
+    navigate(`/leads/status/${status}`);
   };
 
   useEffect(() => {
@@ -108,7 +109,7 @@ const Dashboard = () => {
 
   return (
     <div className="container mt-4 py-3">
-       <ToastContainer/>
+      <ToastContainer />
       <h2 className="text-center mb-4 text-primary">Anvaya CRM Dashboard</h2>
 
       {/* Leads Section */}
@@ -117,23 +118,28 @@ const Dashboard = () => {
           <h5 className="mb-0">Leads</h5>
         </div>
 
-        <div className="d-flex flex-wrap gap-3 p-3">
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3 p-3">
           {loading ? (
             <p>Loading leads...</p>
           ) : leads.length > 0 ? (
             leads.map((lead) => (
-              <div
-                key={lead._id}
-                className="card p-3 shadow-sm"
-                style={{ minWidth: "150px", cursor: "pointer" }}
-                onClick={() => console.log("Clicked Lead:", lead)}
-              >
-                <Link to={`/leads/${lead._id}`}>
-                  <h6 className="mb-1">{lead.name || "Unnamed Lead"}</h6>
-                  <small className="text-muted">
-                    {lead.status || "No status"}
-                  </small>
-                </Link>
+              <div className="col" key={lead._id}>
+                <div
+                  className="card h-100 p-3 shadow-sm"
+                  style={{ cursor: "pointer" }}
+                >
+                  <Link
+                    to={`/leads/${lead._id}`}
+                    className="text-decoration-none"
+                  >
+                    <h6 className="mb-1 text-dark">
+                      {lead.name || "Unnamed Lead"}
+                    </h6>
+                    <small className="text-muted">
+                      {lead.status || "No status"}
+                    </small>
+                  </Link>
+                </div>
               </div>
             ))
           ) : (
@@ -149,62 +155,47 @@ const Dashboard = () => {
         </div>
         <div className="card-body">
           <ul className="list-group">
-            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("New")}
-              style={{ cursor: "pointer" }}>
-              New{" "}
-              <span className="badge bg-primary" >
-                {leads?.filter((l) => l?.status === "New").length}
-              </span>
-            </li>
-            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("Contacted")}
-              style={{ cursor: "pointer" }}>
-              Contacted{" "}
-              <span className="badge bg-warning text-dark">
-                {leads?.filter((l) => l?.status === "Contacted").length}
-                <Link to="/lead-status"></Link>
-              </span>
-            </li>
-            <li className="list-group-item d-flex justify-content-between" onClick={() => goToStatusPage("Qualified")}
-              style={{ cursor: "pointer" }}>
-              Qualified{" "}
-              <span className="badge bg-success">
-                {leads?.filter((l) => l?.status === "Qualified").length}
-              </span>
-            </li>
+            {["New", "Contacted", "Qualified", "Closed"].map((status) => (
+              <li
+                key={status}
+                className="list-group-item d-flex justify-content-between"
+                onClick={() => goToStatusPage(status)}
+                style={{ cursor: "pointer" }}
+              >
+                {status}{" "}
+                <span
+                  className={`badge ${
+                    status === "New"
+                      ? "bg-primary"
+                      : status === "Contacted"
+                      ? "bg-warning text-dark"
+                      : status === "Qualified"
+                      ? "bg-success"
+                      : "bg-danger"
+                  }`}
+                >
+                  {leads?.filter((l) => l?.status === status).length}
+                </span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
+
+      {/* Quick Filters */}
       <div className="mb-3">
         <h5>Quick Filters</h5>
-        <button
-          className={`btn me-2 ${filterStatus === "New" ? "btn-primary" : "btn-outline-primary"
+        {["New", "Contacted", "Qualified", "Closed"].map((status) => (
+          <button
+            key={status}
+            className={`btn me-2 ${
+              filterStatus === status ? "btn-primary" : "btn-outline-primary"
             }`}
-          onClick={() => goToStatusPage("New")}
-        >
-          New
-        </button>
-        <button
-          className={`btn me-2 ${filterStatus === "Contacted" ? "btn-warning" : "btn-outline-warning"
-            }`}
-          onClick={() => goToStatusPage("Contacted")}
-        >
-          Contacted 
-        </button>
-        <button
-          className={`btn me-2 ${filterStatus === "Qualified" ? "btn-warning" : "btn-outline-warning"
-            }`}
-          onClick={() => goToStatusPage("Qualified")}
-        >
-          Qualified
-        </button>
-           <button
-          className={`btn ${filterStatus === "Contacted" ? "btn-warning" : "btn-outline-warning"
-            }`}
-          onClick={() => goToStatusPage("Closed")}
-        >
-          Closed
-        </button>
-        {/* Optional: Add more status buttons here */}
+            onClick={() => goToStatusPage(status)}
+          >
+            {status}
+          </button>
+        ))}
         {filterStatus && (
           <button
             className="btn btn-secondary ms-3"
@@ -215,13 +206,15 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Add New Lead */}
+      {/* Add New Lead Button */}
       <button
-        className="btn btn-success w-100  ms-3"
+        className="btn btn-success w-100"
         onClick={() => setShowModal(true)}
       >
         + Add New Lead
       </button>
+
+      {/* Add Lead Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Add New Lead</Modal.Title>
@@ -255,15 +248,16 @@ const Dashboard = () => {
             <Form.Group className="mb-2">
               <Form.Label>Sales Agent</Form.Label>
               <Form.Select
-                type="text"
                 name="salesAgent"
                 value={formData.salesAgent}
                 onChange={handleChange}
-                placeholder="Agent name"
               >
-                {agents.map((agent) => {
-                  return <option key={agent._id} value={agent._id}>{agent.name}</option>
-                })}
+                <option value="">Select Agent</option>
+                {agents.map((agent) => (
+                  <option key={agent._id} value={agent._id}>
+                    {agent.name}
+                  </option>
+                ))}
               </Form.Select>
             </Form.Group>
 
@@ -277,6 +271,7 @@ const Dashboard = () => {
                 <option value="New">New</option>
                 <option value="Contacted">Contacted</option>
                 <option value="Qualified">Qualified</option>
+                <option value="Closed">Closed</option>
               </Form.Select>
             </Form.Group>
 

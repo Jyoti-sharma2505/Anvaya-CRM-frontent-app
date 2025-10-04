@@ -57,7 +57,7 @@ const SalesAgentManagement = () => {
     <div className="container-fluid vh-100 d-flex flex-column">
       {/* Header */}
       <header className="bg-primary text-white py-3 px-4">
-        <ToastContainer/>s
+        <ToastContainer/>
         <h1 className="h4 m-0">Sales Agent Management</h1>
       </header>
 
