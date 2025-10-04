@@ -21,12 +21,28 @@ const LeadList = () => {
     tags: "",
   });
 
+  useEffect(() => {
+    fetchLeads();
+    fetchDataAgents();
+  }, []);
+
+  const fetchLeads = async () => {
+    const res = await axios.get("https://anvaya-crm-backend-app.vercel.app/leads");
+    setLeads(res.data.leads);
+  };
+
+  const fetchDataAgents = async () => {
+    try {
+      const res = await axios.get("https://anvaya-crm-backend-app.vercel.app/agents");
+      setAgents(res.data.agents);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleCreateLead = async () => {
@@ -34,14 +50,9 @@ const LeadList = () => {
       const payload = {
         ...formData,
         timeToClose: Number(formData.timeToClose),
-        tags: formData.tags
-          ? formData.tags.split(",").map((tag) => tag.trim())
-          : [],
+        tags: formData.tags ? formData.tags.split(",").map((tag) => tag.trim()) : [],
       };
-      const res = await axios.post(
-        "https://anvaya-crm-backend-app.vercel.app/leads",
-        payload
-      );
+      const res = await axios.post("https://anvaya-crm-backend-app.vercel.app/leads", payload);
       setLeads((prev) => [...prev, res.data.lead]);
       setShowModal(false);
       setFormData({
@@ -53,29 +64,6 @@ const LeadList = () => {
         timeToClose: "",
         tags: "",
       });
-    } catch (error) {
-      console.log(error, "error");
-    }
-  };
-
-  useEffect(() => {
-    fetchLeads();
-    fetchDataAgents();
-  }, []);
-
-  const fetchLeads = async () => {
-    const res = await axios.get(
-      "https://anvaya-crm-backend-app.vercel.app/leads"
-    );
-    setLeads(res.data.leads);
-  };
-
-  const fetchDataAgents = async () => {
-    try {
-      const res = await axios.get(
-        "https://anvaya-crm-backend-app.vercel.app/agents"
-      );
-      setAgents(res.data.agents);
     } catch (error) {
       console.log(error);
     }
@@ -99,10 +87,10 @@ const LeadList = () => {
     });
 
   return (
-    <div className="p-3">
+    <div className="container-fluid p-3">
       <h2 className="mb-4 text-center text-md-start">Lead List</h2>
 
-      {/* Filters */}
+      {/* Filters - Responsive Grid */}
       <div className="row g-2 mb-4">
         <div className="col-12 col-md-4">
           <select
@@ -142,33 +130,32 @@ const LeadList = () => {
         </div>
       </div>
 
-      {/* Lead List */}
-      <ul className="list-group mb-3">
+      {/* Lead List Responsive */}
+      <div className="row g-3">
         {filteredLeads.map((lead) => (
-          <li
-            key={lead._id}
-            className="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center"
-          >
-            <span className="mb-2 mb-md-0">
-              <strong>{lead.name}</strong> - [{lead.status}] -{" "}
-              {lead.salesAgent?.name}
-            </span>
-            <Link
-              to={`/leads/${lead._id}`}
-              className="btn btn-sm btn-primary align-self-start align-self-md-center"
-            >
-              View
-            </Link>
-          </li>
+          <div key={lead._id} className="col-12 col-md-6 col-lg-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-body d-flex flex-column">
+                <h5 className="card-title">{lead.name}</h5>
+                <p className="card-text mb-2">
+                  <strong>Status:</strong> {lead.status} <br />
+                  <strong>Agent:</strong> {lead.salesAgent?.name || "Unassigned"}
+                </p>
+                <Link
+                  to={`/leads/${lead._id}`}
+                  className="btn btn-primary mt-auto"
+                >
+                  View Details
+                </Link>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
 
-      {/* Add New Lead */}
-      <div className="text-center text-md-start">
-        <button
-          className="btn btn-success mt-2"
-          onClick={() => setShowModal(true)}
-        >
+      {/* Add Lead Button */}
+      <div className="text-center text-md-start mt-4">
+        <button className="btn btn-success" onClick={() => setShowModal(true)}>
           ➕ Add New Lead
         </button>
       </div>
@@ -189,7 +176,6 @@ const LeadList = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Lead Source</Form.Label>
               <Form.Select
@@ -203,7 +189,6 @@ const LeadList = () => {
                 <option value="Cold Call">Cold Call</option>
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Sales Agent</Form.Label>
               <Form.Select
@@ -219,7 +204,6 @@ const LeadList = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Status</Form.Label>
               <Form.Select
@@ -232,7 +216,6 @@ const LeadList = () => {
                 <option value="Qualified">Qualified</option>
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Priority</Form.Label>
               <Form.Select
@@ -245,7 +228,6 @@ const LeadList = () => {
                 <option value="Low">Low</option>
               </Form.Select>
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Time to Close (days)</Form.Label>
               <Form.Control
@@ -255,7 +237,6 @@ const LeadList = () => {
                 onChange={handleChange}
               />
             </Form.Group>
-
             <Form.Group className="mb-2">
               <Form.Label>Tags</Form.Label>
               <Form.Control
@@ -268,13 +249,12 @@ const LeadList = () => {
             </Form.Group>
           </Form>
         </Modal.Body>
-
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Cancel
           </Button>
           <Button variant="success" onClick={handleCreateLead}>
-            Create Lead
+            Save
           </Button>
         </Modal.Footer>
       </Modal>

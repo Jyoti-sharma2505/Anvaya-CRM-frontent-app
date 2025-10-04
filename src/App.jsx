@@ -12,16 +12,19 @@ import SalesAgentManagement from "./pages/SalesAgentManagement";
 import Reports from "./pages/Reports";
 import LeadsByStatus from "./pages/LeadsByStatus";
 import LeadByAgent from "./pages/LeadByAgent";
+import ResponsiveSidebar from "./components/ResponsiveSidebar";
 
 // ✅ Layout component jaha useLocation sahi chalega
 function Layout() {
-  const location = useLocation();
-  const isHome = location.pathname === "/";
+  // const location = useLocation();
+  // const isHome = location.pathname === "/";
 
   return (
     <div className="app-container d-flex">
-      {isHome ? <Sidebar /> : <Bar />}
+      {/* {isHome ? <Sidebar /> : <Bar />} */}
+      
       <div className="flex-grow-1 p-3">
+        <ResponsiveSidebar>
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/leads/:leadId" element={<LeadDetails />} />
@@ -32,6 +35,7 @@ function Layout() {
            <Route path="/leads/agent/:name" element={<LeadByAgent />} />
           {/* Baaki routes yaha add kar sakte ho */}
         </Routes>
+        </ResponsiveSidebar>
       </div>
     </div>
   );
